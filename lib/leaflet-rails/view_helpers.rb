@@ -8,6 +8,7 @@ module Leaflet
       options[:max_zoom] ||= Leaflet.max_zoom
       options[:subdomains] ||= Leaflet.subdomains
       options[:container_id] ||= 'map'
+      options[:map_options] ||= {}
 
       tile_layer = options.delete(:tile_layer) || Leaflet.tile_layer
       attribution = options.delete(:attribution) || Leaflet.attribution
@@ -24,7 +25,14 @@ module Leaflet
       output = []
       output << "<div id='#{container_id}'></div>" unless no_container
       output << "<script>"
-      output << "var map = L.map('#{container_id}')"
+
+      map_options = "{"
+      options[:map_options].each do |key, value|
+        map_options << "#{key.to_s.camelize(:lower)}: '#{value}',"
+      end
+      map_options << "}"
+
+      output << "var map = L.map('#{container_id}', #{map_options})"
 
       if center
         output << "map.setView([#{center[:latlng][0]}, #{center[:latlng][1]}], #{center[:zoom]})"
@@ -38,7 +46,7 @@ module Leaflet
             output << "marker = L.marker([#{marker[:latlng][0]}, #{marker[:latlng][1]}], {icon: #{icon_settings[:name]}#{index}}).addTo(map)"
           else
             output << "marker = L.marker([#{marker[:latlng][0]}, #{marker[:latlng][1]}]).addTo(map)"
-          end          
+          end
           if marker[:popup]
             output << "marker.bindPopup('#{marker[:popup]}')"
           end
@@ -71,7 +79,7 @@ module Leaflet
       output << "L.tileLayer('#{tile_layer}', {
           attribution: '#{attribution}',
           maxZoom: #{max_zoom},"
-      
+
       if options[:subdomains]
         output << "    subdomains: #{options[:subdomains]},"
         options.delete( :subdomains )
