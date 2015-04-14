@@ -28,9 +28,15 @@ module Leaflet
 
       map_options = "{"
       options[:map_options].each do |key, value|
-        map_options << "#{key.to_s.camelize(:lower)}: '#{value}',"
+        if is_boolean(value)
+          map_options << "#{key.to_s.camelize(:lower)}: #{value},"
+        else
+          map_options << "#{key.to_s.camelize(:lower)}: '#{value}',"
+        end
       end
       map_options << "}"
+
+      options.delete(:map_options)
 
       output << "var map = L.map('#{container_id}', #{map_options})"
 
@@ -95,6 +101,10 @@ module Leaflet
     end
 
     private
+
+    def is_boolean(val)
+      !!val == val
+    end
 
     def prep_icon_settings(settings)
       settings[:name] = 'icon' if settings[:name].nil? or settings[:name].blank?
